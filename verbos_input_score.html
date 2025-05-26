@@ -1,0 +1,140 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Verbos irregulares - Escribe la respuesta</title>
+  <style>
+    body { font-family: Arial; max-width: 600px; margin: auto; padding: 20px; }
+    label, select, input, button { margin-top: 10px; display: block; font-size: 16px; }
+    input[type="text"] { padding: 6px; width: 100%; box-sizing: border-box; }
+    .correct { color: green; margin-top: 10px; }
+    .incorrect { color: red; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <h2>Práctica de verbos irregulares</h2>
+  <p id="question"></p>
+  <label for="answer">Tu respuesta:</label>
+  <input type="text" id="answer" autocomplete="off">
+  <button onclick="checkAnswer()">Comprobar</button>
+  <p id="result"></p>
+  <p><strong>Puntuación:</strong> <span id="score">0</span> aciertos de <span id="total">0</span> intentos</p>
+  <button onclick="nextQuestion()">Siguiente</button>
+
+  <script>
+    const verbs = [
+        {es: "ser/estar", inf: "be", past: "was/were", part: "been"},
+        {es: "empezar", inf: "begin", past: "began", part: "begun"},
+        {es: "romper", inf: "break", past: "broke", part: "broken"},
+        {es: "traer", inf: "bring", past: "brought", part: "brought"},
+        {es: "construir", inf: "build", past: "built", part: "built"},
+        {es: "quemar", inf: "burn", past: "burnt", part: "burnt"},
+        {es: "comprar", inf: "buy", past: "bought", part: "bought"},
+        {es: "poder", inf: "can", past: "could", part: "been able to"},
+        {es: "coger", inf: "catch", past: "caught", part: "caught"},
+        {es: "elegir", inf: "choose", past: "chose", part: "chosen"},
+        {es: "venir", inf: "come", past: "came", part: "come"},
+        {es: "costar", inf: "cost", past: "cost", part: "cost"},
+        {es: "cortar", inf: "cut", past: "cut", part: "cut"},
+        {es: "hacer", inf: "do", past: "did", part: "done"},
+        {es: "dibujar", inf: "draw", past: "drew", part: "drawn"},
+        {es: "soñar", inf: "dream", past: "dreamt", part: "dreamt"},
+        {es: "beber", inf: "drink", past: "drank", part: "drunk"},
+        {es: "conducir", inf: "drive", past: "drove", part: "driven"},
+        {es: "comer", inf: "eat", past: "ate", part: "eaten"},
+        {es: "caerse", inf: "fall", past: "fell", part: "fallen"},
+        {es: "sentir(se)", inf: "feel", past: "felt", part: "felt"},
+        {es: "luchar/pelear", inf: "fight", past: "fought", part: "fought"},
+        {es: "encontrar", inf: "find", past: "found", part: "found"},
+        {es: "volar", inf: "fly", past: "flew", part: "flown"},
+        {es: "olvidar", inf: "forget", past: "forgot", part: "forgotten"},
+        {es: "perdonar", inf: "forgive", past: "forgave", part: "forgiven"},
+        {es: "obtener", inf: "get", past: "got", part: "got"},
+        {es: "dar", inf: "give", past: "gave", part: "given"},
+        {es: "irse", inf: "go", past: "went", part: "gone"},
+        {es: "crecer", inf: "grow", past: "grew", part: "grown"},
+        {es: "tener", inf: "have", past: "had", part: "had"},
+        {es: "oír", inf: "hear", past: "heard", part: "heard"},
+        {es: "golpear", inf: "hit", past: "hit", part: "hit"},
+        {es: "saber", inf: "know", past: "knew", part: "known"},
+        {es: "aprender", inf: "learn", past: "learnt", part: "learnt"},
+        {es: "irse/dejar", inf: "leave", past: "left", part: "left"},
+        {es: "perder", inf: "lose", past: "lost", part: "lost"},
+        {es: "hacer (fabricar)", inf: "make", past: "made", part: "made"},
+        {es: "conocer", inf: "meet", past: "met", part: "met"},
+        {es: "tener que", inf: "must", past: "had to", part: "had to"},
+        {es: "pagar", inf: "pay", past: "paid", part: "paid"},
+        {es: "poner", inf: "put", past: "put", part: "put"},
+        {es: "leer", inf: "read", past: "read", part: "read"},
+        {es: "sonar", inf: "ring", past: "rang", part: "rung"},
+        {es: "correr", inf: "run", past: "ran", part: "run"},
+        {es: "decir", inf: "say", past: "said", part: "said"},
+        {es: "ver", inf: "see", past: "saw", part: "seen"},
+        {es: "mostrar/enseñar", inf: "show", past: "showed", part: "shown"},
+        {es: "cantar", inf: "sing", past: "sang", part: "sung"},
+        {es: "sentarse", inf: "sit", past: "sat", part: "sat"},
+        {es: "dormir", inf: "sleep", past: "slept", part: "slept"},
+        {es: "hablar", inf: "speak", past: "spoke", part: "spoken"},
+        {es: "gastar", inf: "spend", past: "spent", part: "spent"},
+        {es: "nadar", inf: "swim", past: "swam", part: "swum"},
+        {es: "tomar", inf: "take", past: "took", part: "taken"},
+        {es: "enseñar", inf: "teach", past: "taught", part: "taught"},
+        {es: "contar", inf: "tell", past: "told", part: "told"},
+        {es: "pensar", inf: "think", past: "thought", part: "thought"},
+        {es: "entender", inf: "understand", past: "understood", part: "understood"},
+        {es: "despertar", inf: "wake", past: "woke", part: "woken"},
+        {es: "llevar puesto", inf: "wear", past: "wore", part: "worn"},
+        {es: "ganar", inf: "win", past: "won", part: "won"},
+        {es: "escribir", inf: "write", past: "wrote", part: "wrotten"}
+    ];
+
+    let currentVerb = {};
+    let currentForm = "";
+    let correctAnswer = "";
+    let score = 0;
+    let total = 0;
+
+    function updateScoreDisplay() {
+      document.getElementById("score").textContent = score;
+      document.getElementById("total").textContent = total;
+    }
+
+    function nextQuestion() {
+      document.getElementById("result").textContent = "";
+      document.getElementById("answer").value = "";
+      const verb = verbs[Math.floor(Math.random() * verbs.length)];
+      currentVerb = verb;
+
+      const forms = ["infinitivo", "pasado", "participio"];
+      const form = forms[Math.floor(Math.random() * forms.length)];
+      currentForm = form;
+
+      if (form === "infinitivo") correctAnswer = verb.inf;
+      else if (form === "pasado") correctAnswer = verb.past;
+      else correctAnswer = verb.part;
+
+      document.getElementById("question").textContent = `¿Cuál es el ${form} del verbo "${verb.es}"?`;
+    }
+
+    function checkAnswer() {
+      const userInput = document.getElementById("answer").value.trim().toLowerCase();
+      const expected = correctAnswer.toLowerCase();
+      const resultEl = document.getElementById("result");
+      total++;
+      if (userInput === expected) {
+        score++;
+        resultEl.textContent = "¡Correcto!";
+        resultEl.className = "correct";
+      } else {
+        resultEl.textContent = `Incorrecto. La respuesta correcta era: ${correctAnswer}`;
+        resultEl.className = "incorrect";
+      }
+      updateScoreDisplay();
+    }
+
+    nextQuestion();
+  </script>
+</body>
+</html>
+
